@@ -6,49 +6,48 @@ The former 1-hour CTP 1 is now the hands-on lab at the end of CM 2.
 2. **ShopFast data inventory (25 min, pairs):** fill `data_inventory_template.csv` for the 7 datasets (description, owner/steward/custodian, personal data, sensitivity, row count, 2+ issues). Use `explore_shopfast.sql` to query the database.
 3. Push it to your project repo as `data_inventory_<group>.csv` — reused in CTP 3 and CTP 4.
 
-## Partie 2 — Inventaire finalisé le 24 novembre 2026
+## Part 2 — Data inventory completed on 24 November 2026
 
-Le livrable est **[data_inventory_Adrien_Queroy.csv](data_inventory_Adrien_Queroy.csv)**. Il contient les 7 jeux de données, une description par jeu, le domaine métier, les fonctions responsables proposées, la présence de données personnelles, la sensibilité, le nombre de lignes et au moins deux constats par jeu.
+The deliverable covers all seven datasets. For each dataset, it records a description, the business domain, proposed roles, the presence of personal data, the sensitivity level, the row count, and at least two findings. [Download the inventory CSV](data_inventory_Adrien_Queroy.csv).
 
-### Informations à valider
+### Details to confirm
 
-- **Nom du livrable** : `data_inventory_Adrien_Queroy.csv`, avec le suffixe choisi pendant l’exercice.
-- **Owner, steward et custodian** : les fonctions du CSV sont des propositions pour l'entreprise fictive ShopFast, pas des responsabilités nominatives confirmées. À valider avec la répartition retenue par le groupe. L'owner décide des règles métier ; le steward suit la qualité et les définitions ; le custodian exploite les systèmes.
-- **Fréquences de mise à jour** : non documentées dans les sources examinées. `To be confirmed` est conservé pour les 7 jeux ; aucune fréquence n'a été inventée.
-- **Classement de `products`** : `Internal` est une proposition pour le fichier complet, qui inclut les fournisseurs et le statut d'activation. Les noms et prix publics seuls pourraient être classés `Public` selon la grille du cours.
+- Confirm the proposed data owner, steward, and custodian roles for ShopFast. The owner sets business rules, the steward oversees data quality and definitions, and the custodian operates the systems.
+- The sources reviewed do not specify refresh frequencies, so all seven datasets are marked `To be confirmed`.
+- The proposed classification for the full `products` file is `Internal` because it includes suppliers and active status. Public product names and prices alone could be classified as `Public` under the course rubric.
 
-### Synthèse des données
+### Dataset summary
 
-Les effectifs ci-dessous proviennent des CSV du dossier `shopfast-kit/data/`. Ils comptent les enregistrements, y compris les doublons.
+The row counts come from the CSV files in `shopfast-kit/data/` and include duplicate records.
 
-| Jeu de données | Lignes | Données personnelles | Sensibilité retenue | Principaux constats |
+| Dataset | Rows | Personal data | Sensitivity | Main findings |
 |---|---:|:---:|---|---|
-| `customers` | 1241 | Y | Restricted | Codes pays `FR`/`fr` ; formats de naissance différents ; email contenant `@@`. |
-| `products` | 52 | N | Internal | SKU dupliqué ; catégories non normalisées ; un prix manquant et un prix négatif. |
-| `orders` | 5207 | Y | Confidential | 7 identifiants dupliqués sur 14 lignes ; 14 références client absentes ; 11 dates manquantes ; statuts non standard. |
-| `order_items` | 9193 | Y | Confidential | 8 quantités égales à zéro ou négatives ; 4 références produit absentes. |
-| `payments` | 4902 | Y | Confidential | 6 montants différents du total de commande ; 4 paiements antérieurs à leur commande. |
-| `support_tickets` | 422 | Y | Restricted | 53 tickets avec un motif d'IBAN non masqué ; 62 notes avec une date de naissance ; incohérence sujet/message observée. |
-| `marketing_campaign_export` | 600 | Y | Confidential | Consentement et preuve associés absents de l'export ; date d'extraction absente. |
+| `customers` | 1241 | Y | Restricted | Inconsistent country codes (`FR`/`fr`), mixed birth date formats, and an email address containing `@@`. |
+| `products` | 52 | N | Internal | A duplicate SKU, inconsistent category labels, one missing price, and one negative price. |
+| `orders` | 5207 | Y | Confidential | Seven duplicate IDs affecting 14 rows, 14 unmatched customer references, 11 missing dates, and nonstandard statuses. |
+| `order_items` | 9193 | Y | Confidential | Eight quantities of zero or less and four unmatched product references. |
+| `payments` | 4902 | Y | Confidential | Six payment amounts differ from the linked order totals, and four payment dates precede the linked order dates. |
+| `support_tickets` | 422 | Y | Restricted | 53 tickets with an unmasked IBAN pattern, 62 notes with a birth date, and an observed mismatch between a ticket subject and its message. |
+| `marketing_campaign_export` | 600 | Y | Confidential | The export lacks consent records, supporting evidence, and an extraction timestamp. |
 
-### Méthode et limites des constats
+### Method and limitations
 
-- Les CSV complets ont été examinés : valeurs manquantes, doublons, catégories, montants, dates et correspondance des identifiants entre tables. Les cinq premières lignes de chaque table ont aussi été affichées dans PostgreSQL pendant l'exercice.
-- Les effectifs des 7 jeux ont été recomptés sur les CSV. L'auto-test exécuté dans le terminal a également confirmé 1241 clients dans PostgreSQL. Le script `explore_shopfast.sql`, fourni avec le lab, contient la requête pour recompter les 7 tables dans la base.
-- Les contrôles temporels utilisent comme référence le **24 novembre 2026**. Les 5 commandes futures mentionnées dans le CSV le sont par rapport à cette date.
-- Les 6 écarts de montant et les 4 écarts de date entre `payments` et `orders` sont calculés uniquement pour les commandes dont l'identifiant est unique. Ce sont des incohérences à investiguer : les erreurs peuvent provenir de `orders`. Un écart de montant doit aussi être confronté aux règles métier, notamment aux éventuels paiements partiels.
-- Un champ `card_last4` vide n'est pas automatiquement une erreur. Son caractère obligatoire dépend du moyen de paiement et des règles métier.
-- Les 53 motifs d'IBAN sont détectés par leur forme, sans validation de leur clé de contrôle. La présence d'un IBAN dans un message justifie `Restricted` selon la grille du cours. Les dates de naissance présentes dans les notes constituent un autre point de vigilance sur le texte libre.
-- Pour `customers`, le niveau `Restricted` correspond à la présence conjointe de dates de naissance et d'adresses, selon la grille du cours.
-- `orders`, `order_items` et `payments` sont rattachables à des clients par leurs identifiants. L'absence de nom dans ces tables ne suffit donc pas à les considérer comme anonymes.
-- Les **600 contacts marketing ont tous `marketing_consent=true` dans la source actuelle**. Aucun doublon d'identifiant ou d'email normalisé n'a été trouvé dans cet export. Les constats portent sur la traçabilité : le fichier seul ne permet pas de vérifier le consentement ni de savoir à quelle date il reflétait la source. Cela ne démontre pas l'envoi d'une campagne sans consentement.
-- Les données ShopFast sont fictives, comme indiqué dans le README du kit. Les constats de sensibilité appliquent la grille pédagogique du support, pages 25–26.
+- The full CSV files were checked for missing values, duplicates, category inconsistencies, amounts, dates, and matching identifiers across tables. The first five rows of each table were also inspected in PostgreSQL.
+- Row counts for all seven datasets were verified against the CSV files. The setup check also confirmed 1,241 customer records in PostgreSQL. The lab's `explore_shopfast.sql` script includes a query to count rows in all seven database tables.
+- Date checks used **24 November 2026** as the reference date. Five orders were dated after that cutoff.
+- The six amount discrepancies and four date discrepancies between `payments` and `orders` only cover orders with unique IDs. Investigate both tables to determine the source of each discrepancy. Check payment amounts against business rules for scenarios such as partial payments.
+- Whether `card_last4` is required depends on the payment method and the applicable business rules.
+- The 53 IBAN matches were identified by their format. Their check digits were not validated. Under the course rubric, an IBAN in a message warrants a `Restricted` classification for the dataset. Birth dates in agent notes are another example of personal data recorded in free text.
+- The combination of birth dates and addresses warrants a `Restricted` classification for `customers` under the course rubric.
+- Records in `orders`, `order_items`, and `payments` can be linked to customers through identifiers, making them personal data.
+- All **600 marketing contacts have `marketing_consent=true` in the current source data**. Checks found no duplicate customer IDs or normalized email addresses. Verifying consent as of the export date requires a timestamp and consent evidence from the source.
+- The ShopFast data is fictional, as stated in the kit README. Sensitivity classifications follow the rubric on pages 25–26 of the course slides.
 
-### Vérifications finales et suite
+### Final checks and next steps
 
-Le livrable a été relu comme un CSV : 12 colonnes, 7 lignes de données, aucun champ vide, effectifs conformes aux fichiers source et au moins deux constats par jeu. Les valeurs à confirmer sont explicitement signalées.
+The CSV has 12 columns and seven data rows, with each field populated. Row counts match the source files, and each dataset has at least two findings. Entries that still need confirmation are marked explicitly.
 
-La partie 1 a également été réalisée : PostgreSQL démarré, environnement Python 3.12 activé, auto-test `READY` et interface OpenRefine ouverte, d'après les résultats partagés dans le terminal.
+Part 1 was also completed. PostgreSQL started, the Python 3.12 virtual environment was activated, the setup check reported `READY`, and OpenRefine opened successfully.
 
-L'inventaire servira de référence pour les CTP 3 et 4. Les exercices suivants traiteront la correction des problèmes recensés ici.
+The inventory will serve as a reference for CTP 3 and CTP 4. Later exercises will address the issues recorded here.
 
