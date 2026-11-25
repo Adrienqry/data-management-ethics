@@ -1,0 +1,1 @@
+ShopFast was missing an enforced data contract that specified that amount must be expressed in euros and treated a switch to cents as a breaking change.
