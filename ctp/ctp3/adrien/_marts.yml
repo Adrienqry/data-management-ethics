@@ -1,0 +1,105 @@
+version: 2
+
+models:
+  - name: fct_orders
+    description: "One row per order with gross, refunded and net revenue. Source of the Sales dashboard and the Finance report."
+    meta:
+      owner: "Sara Martin (Head of Sales)"
+      steward: "Sales Data Steward"
+      domain: sales
+      tier: gold
+    columns:
+      - name: order_id
+        description: "Identifier of the order. One row per order."
+        tags: ['pii']
+        meta: {classification: confidential}
+        data_tests: [unique, not_null]
+      # TODO: document the other columns
+      - name: customer_id
+        description: "Identifier of the customer account associated with the order."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: order_date
+        description: "Date the order was placed. Null when the source date is missing or cannot be parsed."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: status
+        description: "Standardized order lifecycle status from the staging orders model."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: channel
+        description: "Sales channel through which the customer placed the order."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: shipping_country
+        description: "Destination country code recorded for the order."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: gross_revenue_eur
+        description: "Recorded order total in euros before refunds and before removing VAT."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: refunded_eur
+        description: "Sum of refunded payment events for the order in euros. Zero when no refund is recorded."
+        tags: ['pii']
+        meta: {classification: confidential}
+      # TODO (Exercise 3): replace with the glossary term net_revenue using the doc() function
+      - name: net_revenue_eur
+        description: "{{ doc('net_revenue') }}"
+        tags: ['pii']
+        meta: {classification: confidential}
+
+  - name: dim_customers
+    description: "One row per customer account with contact and loyalty information and lifetime order metrics."
+    # TODO: meta owner / steward / domain / tier, column docs, PII tags
+    meta:
+      owner: "CRM Manager"
+      steward: "CRM Data Steward"
+      domain: customer
+      tier: silver
+    columns:
+      - name: customer_id
+        description: "Identifier of the customer account. One row per account."
+        tags: ['pii']
+        meta: {classification: confidential}
+        data_tests: [unique, not_null]
+      - name: first_name
+        description: "First name recorded for the customer account."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: last_name
+        description: "Last name recorded for the customer account."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: email
+        description: "Login email trimmed and converted to lowercase."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: country_code
+        description: "Standardized two-letter customer country code. Null when the source value cannot be mapped."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: loyalty_tier
+        description: "Customer loyalty level from the staging customers model."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: signup_date
+        description: "Date the customer account was registered."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: has_marketing_consent
+        description: "Boolean flag indicating whether the source records consent to receive marketing communications."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: lifetime_orders
+        description: "Count of orders linked to the customer across all order statuses. Zero when no order is linked."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: last_order_date
+        description: "Latest recorded date among the customer's orders. Null when there is no dated order."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: lifetime_net_revenue_eur
+        description: "Sum of order net revenue in euros for the account. Zero when no net revenue is recorded."
+        tags: ['pii']
+        meta: {classification: confidential}

@@ -1,0 +1,205 @@
+version: 2
+
+# CTP 3 - Exercise 1: document and govern the staging models.
+# For each model: description, meta (owner, steward, domain, tier); for each column: description,
+# and for personal data: tags: ['pii'] + meta: {classification: confidential|restricted}.
+
+models:
+  - name: stg_customers
+    description: "One row per customer account, cleaned from raw.customers (exact duplicate rows removed, ISO country codes, ISO dates)."
+    meta:
+      owner: "Sara Martin (Head of Sales)"
+      steward: "Karim Benali (Analytics Engineer)"
+      domain: customer
+      tier: gold
+    columns:
+      - name: customer_id
+        description: "Technical identifier of the customer account. One person may have several accounts (see duplicates)."
+        tags: ['pii']
+        meta: {classification: confidential}
+        data_tests: [unique, not_null]
+      - name: email
+        description: "Login email, trimmed and lower-cased."
+        tags: ['pii']
+        meta: {classification: confidential}
+      # TODO: document first_name, last_name, phone, birth_date, city, country_code, signup_date,
+      #       has_marketing_consent, loyalty_tier  (description + pii tag/classification where needed)
+      - name: first_name
+        description: "First name recorded for the customer account, with standardized capitalization."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: last_name
+        description: "Last name recorded for the customer account, with standardized capitalization."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: phone
+        description: "Contact phone number as supplied by the source system."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: birth_date
+        description: "Customer birth date converted to a DATE from the supported source formats."
+        tags: ['pii']
+        meta: {classification: restricted}
+      - name: city
+        description: "City recorded in the customer's address."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: country_code
+        description: "Two-letter country code. Null when the source country is missing or cannot be mapped."
+        tags: ['pii']
+        meta: {classification: confidential}
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["FR", "DE", "ES", "BE"]
+      - name: signup_date
+        description: "Date the customer account was registered."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: has_marketing_consent
+        description: "Boolean flag indicating whether the source records consent to receive marketing communications."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: loyalty_tier
+        description: "Customer loyalty level, standardized to lowercase with the platinum spelling corrected."
+        tags: ['pii']
+        meta: {classification: confidential}
+      # TODO: add a test: accepted_values on country_code (FR, DE, ES, BE) and on loyalty_tier
+
+  - name: stg_orders
+    # TODO: one sentence a business user understands
+    description: "One row per order after duplicate order IDs are reduced to one record."
+    # TODO: meta owner / steward / domain / tier
+    meta:
+      owner: "Sales Operations Manager"
+      steward: "Sales Data Steward"
+      domain: sales
+      tier: silver
+    columns:
+      - name: order_id
+        description: "Identifier of the order in the source system."
+        tags: ['pii']
+        meta: {classification: confidential}
+        data_tests: [unique, not_null]
+      # TODO: document customer_id, order_date, status, channel, shipping_country, total_amount_eur
+      - name: customer_id
+        description: "Identifier of the customer account associated with the order."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: order_date
+        description: "Date the order was placed. Null when the source date is missing or cannot be parsed."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: status
+        description: "Order lifecycle status with case, surrounding spaces and the cancelled spelling standardized."
+        tags: ['pii']
+        meta: {classification: confidential}
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["pending", "shipped", "delivered", "cancelled", "returned"]
+      - name: channel
+        description: "Sales channel through which the order was placed, as recorded in the source."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: shipping_country
+        description: "Destination country code recorded for the shipment."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: total_amount_eur
+        description: "Total amount recorded for the order in euros, stored with two decimal places."
+        tags: ['pii']
+        meta: {classification: confidential}
+      # TODO: test accepted_values on status
+
+  - name: stg_order_items
+    description: "One row per product line of an order."
+    meta:
+      owner: "Sales Operations Manager"
+      steward: "Sales Data Steward"
+      domain: sales
+      tier: silver
+    columns:
+      - name: order_item_id
+        description: "Identifier of the product line within the order data."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: order_id
+        description: "Identifier of the order containing this product line."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: product_id
+        description: "Identifier of the product recorded on this order line."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: quantity
+        description: "Number of units recorded for this product line."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: unit_price_eur
+        description: "Price per unit recorded for this order line in euros, stored with two decimal places."
+        tags: ['pii']
+        meta: {classification: confidential}
+  - name: stg_payments
+    description: "One row per payment event from the payment provider (captured or refunded)."
+    # TODO: what is the UNIT of amount? Document it - this is the cents incident!
+    meta:
+      owner: "Finance Manager"
+      steward: "Finance Data Steward"
+      domain: finance
+      tier: silver
+    columns:
+      - name: payment_id
+        description: "Identifier of the payment event in the payment source."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: order_id
+        description: "Identifier of the order associated with the payment event."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: payment_date
+        description: "Date of the payment event. Null when the source date is missing or cannot be parsed."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: method
+        description: "Payment method recorded for the transaction, such as card or PayPal."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: amount
+        description: "Payment amount in euros (EUR), stored as DECIMAL(12,2) with two decimal places."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: currency
+        description: "Currency code supplied for the payment event."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: card_last4
+        description: "Last four digits of the payment card when provided by the payment source."
+        tags: ['pii']
+        meta: {classification: confidential}
+      - name: payment_status
+        description: "Status of the payment event, such as captured or refunded."
+        tags: ['pii']
+        meta: {classification: confidential}
+  - name: stg_products
+    description: "Product catalogue with list prices."
+    meta:
+      owner: "Product Catalogue Manager"
+      steward: "Product Data Steward"
+      domain: product
+      tier: silver
+    columns:
+      - name: product_id
+        description: "Identifier of the product in the catalogue."
+      - name: sku
+        description: "Stock keeping code supplied by the product catalogue."
+      - name: product_name
+        description: "Name under which the product is listed in the source catalogue."
+      - name: category
+        description: "Product category with standardized capitalization."
+      - name: list_price_eur
+        description: "Catalogue list price in euros with two decimal places. Null when no price can be parsed."
+      - name: supplier
+        description: "Supplier recorded for the product in the catalogue."
+      - name: is_active
+        description: "Boolean flag indicating whether the source marks the product as active."
